@@ -363,6 +363,11 @@ const PurePreviewMessage = ({
 
 export const PreviewMessage = PurePreviewMessage;
 
+/**
+ * ThinkingMessage 组件
+ * 
+ * 显示 AI 正在思考的状态（等待第一条响应）。
+ */
 export const ThinkingMessage = () => {
   return (
     <div

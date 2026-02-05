@@ -32,6 +32,12 @@ import { getChatHistoryPaginationKey } from "./sidebar-history";
 import { toast } from "./toast";
 import type { VisibilityType } from "./visibility-selector";
 
+// [自定义修改] 心跳数据类型定义
+interface HeartbeatData {
+  type: "data-heartbeat";
+  data: { timestamp: number };
+}
+
 export function Chat({
   id,
   initialMessages,
@@ -72,6 +78,10 @@ export function Chat({
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
+  
+  // [自定义修改] 心跳计数状态，用于显示工作指示器
+  // 独立维护心跳计数，避免被 DataStreamHandler 清空
+  const [heartbeatCount, setHeartbeatCount] = useState(0);
 
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
@@ -132,9 +142,25 @@ export function Chat({
       },
     }),
     onData: (dataPart) => {
+      console.log("[onData received]:", dataPart);  // [自定义修改] 调试日志
+      
+      // [自定义修改] 累加心跳计数，独立于 dataStream 状态
+      // 这样即使 DataStreamHandler 清空 dataStream，心跳计数仍然保留
+      if (dataPart && typeof dataPart === 'object' && 'type' in dataPart && dataPart.type === "data-heartbeat") {
+        setHeartbeatCount((prev) => {
+          const newCount = prev + 1;
+          console.log("[Heartbeat count updated]:", newCount);
+          return newCount;
+        });
+      }
+      
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
     },
     onFinish: () => {
+      // [自定义修改] 重置心跳计数
+      setHeartbeatCount(0);
+      console.log("[onFinish] Heartbeat count reset to 0");
+      
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
@@ -197,6 +223,7 @@ export function Chat({
         <Messages
           addToolApprovalResponse={addToolApprovalResponse}
           chatId={id}
+          heartbeatCount={heartbeatCount}
           isArtifactVisible={isArtifactVisible}
           isReadonly={isReadonly}
           messages={messages}

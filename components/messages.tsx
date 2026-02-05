@@ -3,13 +3,39 @@ import { ArrowDownIcon } from "lucide-react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
-import { useDataStream } from "./data-stream-provider";
 import { Greeting } from "./greeting";
 import { PreviewMessage, ThinkingMessage } from "./message";
+
+/**
+ * [自定义修改] WorkingIndicator 组件
+ * 
+ * 在 AI 正在执行工具调用时显示工作状态。
+ * 每收到一个心跳，增加一个工作 emoji。
+ * 
+ * 注意：心跳计数通过 props 传入，而不是从 dataStream 读取，
+ * 因为 DataStreamHandler 会立即清空 dataStream。
+ */
+function WorkingIndicator({ heartbeatCount }: { heartbeatCount: number }) {
+  console.log("[WorkingIndicator] heartbeatCount:", heartbeatCount);
+  
+  if (heartbeatCount === 0) return null;
+  
+  // 工作 emoji 列表，交替显示
+  const workEmojis = ["🔨", "🔧", "⚙️", "🛠️", "⛏️", "🪛"];
+  const emojiDisplay = workEmojis.slice(0, Math.min(heartbeatCount, workEmojis.length)).join(" ");
+
+  return (
+    <div className="flex items-center gap-2 text-muted-foreground text-sm animate-pulse">
+      <span>正在努力工作</span>
+      <span>{emojiDisplay}</span>
+    </div>
+  );
+}
 
 type MessagesProps = {
   addToolApprovalResponse: UseChatHelpers<ChatMessage>["addToolApprovalResponse"];
   chatId: string;
+  heartbeatCount: number;  // [自定义修改] 心跳计数，用于显示工作指示器
   status: UseChatHelpers<ChatMessage>["status"];
   votes: Vote[] | undefined;
   messages: ChatMessage[];
@@ -23,6 +49,7 @@ type MessagesProps = {
 function PureMessages({
   addToolApprovalResponse,
   chatId,
+  heartbeatCount,
   status,
   votes,
   messages,
@@ -40,8 +67,6 @@ function PureMessages({
   } = useMessages({
     status,
   });
-
-  useDataStream();
 
   return (
     <div className="relative flex-1">
@@ -81,6 +106,9 @@ function PureMessages({
                 (part) => "state" in part && part.state === "approval-responded"
               )
             ) && <ThinkingMessage />}
+
+          {/* [自定义修改] 在 streaming 状态下显示工作指示器 */}
+          {status === "streaming" && <WorkingIndicator heartbeatCount={heartbeatCount} />}
 
           <div
             className="min-h-[24px] min-w-[24px] shrink-0"

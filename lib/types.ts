@@ -42,6 +42,8 @@ export type CustomUIDataTypes = {
   clear: null;
   finish: null;
   "chat-title": string;
+  // [自定义修改] 心跳数据类型，用于显示工作状态
+  heartbeat: { timestamp: number };
 };
 
 export type ChatMessage = UIMessage<

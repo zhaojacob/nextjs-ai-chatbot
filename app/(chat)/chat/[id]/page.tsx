@@ -54,7 +54,11 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     return (
       <>
         <Chat
-          autoResume={true}
+          // autoResume 已禁用：
+          // 原因：使用自定义 Render 后端 (LangGraph Agent)，不支持 Vercel AI SDK 的 Resumable Streams 功能
+          // 影响：页面刷新时如果 AI 正在回复，回复会中断，需要重新提问
+          // 如需启用，需要在 Render 后端实现 Resumable Streams 并配置 Redis
+          autoResume={false}
           id={chat.id}
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialMessages={uiMessages}
@@ -69,7 +73,11 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <>
       <Chat
-        autoResume={true}
+        // autoResume 已禁用：
+        // 原因：使用自定义 Render 后端 (LangGraph Agent)，不支持 Vercel AI SDK 的 Resumable Streams 功能
+        // 影响：页面刷新时如果 AI 正在回复，回复会中断，需要重新提问
+        // 如需启用，需要在 Render 后端实现 Resumable Streams 并配置 Redis
+        autoResume={false}
         id={chat.id}
         initialChatModel={chatModelFromCookie.value}
         initialMessages={uiMessages}

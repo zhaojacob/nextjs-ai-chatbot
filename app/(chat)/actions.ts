@@ -22,15 +22,10 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
-  const { text } = await generateText({
-    model: getTitleModel(),
-    system: titlePrompt,
-    prompt: getTextFromMessage(message),
-  });
-  return text
-    .replace(/^[#*"\s]+/, "")
-    .replace(/["]+$/, "")
-    .trim();
+  // Skip AI title generation - use first few words of user message instead
+  const text = getTextFromMessage(message);
+  const title = text.slice(0, 50).trim();
+  return title.length > 0 ? (title.length < text.length ? title + "..." : title) : "New Chat";
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {

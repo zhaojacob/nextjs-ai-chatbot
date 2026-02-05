@@ -478,6 +478,7 @@ function PureModelSelectorCompact({
 
   // Provider display names
   const providerNames: Record<string, string> = {
+    deepseek: "DeepSeek",
     anthropic: "Anthropic",
     openai: "OpenAI",
     google: "Google",
